@@ -161,7 +161,7 @@ app.post('/prendas', async (req, res) => {
 });
 
 app.patch('/prenda/:id', async (req, res) => {
-    const prendaId = parseInt(req.params.codigo);
+    const prendaId = parseInt(req.params.id);
     const precioNuevo = req.body;
     try {
         if(!prendaId || !precioNuevo){
@@ -177,11 +177,11 @@ app.patch('/prenda/:id', async (req, res) => {
                 .send('Error al conectarse a MongoDB.');
         }
         const db = client.db('prendas').collection('prendas');
-        await db.updateOne({codigo:prendaId}, {$set:{precioNuevo}})
+        await db.updateOne({codigo:prendaId}, { $set: precioNuevo })
             .then(() => {
                 res
                     .status(201)
-                    .send('Se modifico el precio correctamente.');
+                    .send(`Se modifico el precio correctamente.\n${ JSON.stringify(precioNuevo) }`);
             })
     } catch (error) {
         res
@@ -193,12 +193,12 @@ app.patch('/prenda/:id', async (req, res) => {
 });
 
 app.delete('/prenda/:id', async (req, res) => {
-    const idPrenda = parseInt(req.params.codigo);
+    const idPrenda = parseInt(req.params.id);
     try {
         if(!idPrenda){
             res
                 .status(400)
-                .send(`No se encontro la prenda con id: ${ idPrenda } para eliminar.`);
+                .send(`No se puede eliminar la prenda con id: ${ idPrenda }.`);
             return;
         }
         const client = await connectToDB();
@@ -208,16 +208,16 @@ app.delete('/prenda/:id', async (req, res) => {
                 .send('Error al conectarse a MongoDB');
             return;
         }
-        const db = client.db('pendas').collection('prendas');
-        const resultado = db.deleteOne({ codigo: idPrenda });
-        if(resultado === 0){
-            res
-                .status(404)
-                .send(`No se encontro prenda con el id: ${ idPrenda }`);
-        } else {
+        const db = client.db('prendas').collection('prendas');
+        const resultado = await db.deleteOne({ codigo : idPrenda})
+        if (resultado.deletedCount > 0){
             res
                 .status(204)
-                .send(`Se eliminó la prenda con el id: ${ idPrenda }`);
+                .send({succses:  idPrenda});
+        } else {
+            res
+                .status(404)
+                .send(`No se pudo eleiminar la prenda con id: ${ idPrenda }`);
         }
     } catch (error) {
         res
