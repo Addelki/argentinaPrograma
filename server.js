@@ -146,7 +146,6 @@ app.post('/prendas', async (req, res) => {
     const db = client.db('prendas').collection('prendas');
     await db.insertOne(nuevaPrenda)
         .then(() => {
-            console.log('Nueva prenda creada.')
             res
                 .status(201)
                 .send(nuevaPrenda);
@@ -210,10 +209,10 @@ app.delete('/prenda/:id', async (req, res) => {
         }
         const db = client.db('prendas').collection('prendas');
         const resultado = await db.deleteOne({ codigo : idPrenda})
-        if (resultado.deletedCount > 0){
+        if (resultado.deletedCount === 1){
             res
                 .status(204)
-                .send({succses:  idPrenda});
+                .send();
         } else {
             res
                 .status(404)
